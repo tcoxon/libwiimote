@@ -1,0 +1,40 @@
+# src/Makefile
+
+topdir:=..
+include $(topdir)/config.mk
+
+HEADERS = bthid.h \
+		  wiimote_io.h \
+		  wiimote_report.h \
+		  wiimote_error.h \
+		  wiimote_event.h \
+		  wiimote_ir.h \
+		  wiimote_link.h \
+		  wiimote_util.h \
+		  wiimote_api.h \
+		  wiimote_speaker.h \
+		  nunchuk.h \
+		  wiimote.h
+		  
+SOURCES = wiimote_link.c \
+		  wiimote_ir.c \
+		  wiimote_event.c \
+		  wiimote_io.c \
+		  wiimote_report.c \
+		  wiimote_api.c \
+		  wiimote_error.c \
+		  wiimote_speaker.c \
+		  nunchuk.c
+
+all: libwiimote.a libwiimote.so
+
+libwiimote.so: $(SOURCES) $(HEADERS)
+	$(GCC) $(CFLAGS) $(INCLUDES) $(SOURCES) -shared -o $@  $(LIBS)
+	@cp $@ $(LIBDIR)
+
+libwiimote.a: $(SOURCES) $(HEADERS)
+	$(GCC) $(CFLAGS) $(INCLUDES) -c $(SOURCES)
+	@ar rs $(LIBDIR)/$@ *.o
+	
+clean:
+	@rm -f libwiimote.so *.o *~
