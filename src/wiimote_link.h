@@ -22,7 +22,7 @@
 
 #include "wiimote.h"
 
-int wiimote_discover(wiimote_t **devices, uint8_t size);
+int wiimote_discover(wiimote_t *devices, uint8_t size);
 int wiimote_connect(wiimote_t *wiimote, const char *host);
 int wiimote_disconnect(wiimote_t *wiimote);
 

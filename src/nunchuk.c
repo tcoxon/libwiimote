@@ -34,8 +34,8 @@
 
 static int nunchuk_calibrate(wiimote_t *wiimote)
 {
-	uint8_t *data = (uint8_t *)&wiimote->ext.nunchuk.calibration;
-	if (wiimote_read(wiimote, NUNCHUK_REG_CAL, data, sizeof (nunchuk_calibration_t)) < 0) {		
+	uint8_t *data = (uint8_t *)&wiimote->ext.nunchuk.cal;
+	if (wiimote_read(wiimote, NUNCHUK_REG_CAL, data, sizeof (nunchuk_cal_t)) < 0) {		
 		wiimote_set_error("nunchuk_calibrate(): unable to read calibration data");
 		return WIIMOTE_ERROR;
 	}
@@ -97,7 +97,7 @@ int nunchuk_free(wiimote_t *wiimote)
 {
 	nunchuk_enable(wiimote, 0);
 	
-	if (memset(&wiimote->ext.nunchuk.calibration, 0, sizeof (nunchuk_calibration_t)) < 0) {
+	if (memset(&wiimote->ext.nunchuk.cal, 0, sizeof (nunchuk_cal_t)) < 0) {
 		wiimote_set_error("nunchuk_free(): unable to clear calibration data");
 		return WIIMOTE_ERROR;
 	}

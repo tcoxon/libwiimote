@@ -26,15 +26,15 @@ SOURCES = wiimote_link.c \
 		  wiimote_speaker.c \
 		  nunchuk.c
 
-all: libwiimote.a libwiimote.so
+all: libcwiimote.a libcwiimote.so
 
-libwiimote.so: $(SOURCES) $(HEADERS)
+libcwiimote.so: $(SOURCES) $(HEADERS)
 	$(GCC) $(CFLAGS) $(INCLUDES) $(SOURCES) -shared -o $@  $(LIBS)
 	@cp $@ $(LIBDIR)
 
-libwiimote.a: $(SOURCES) $(HEADERS)
+libcwiimote.a: $(SOURCES) $(HEADERS)
 	$(GCC) $(CFLAGS) $(INCLUDES) -c $(SOURCES)
 	@ar rs $(LIBDIR)/$@ *.o
 	
 clean:
-	@rm -f libwiimote.so *.o *~
+	@rm -f libcwiimote.so *.o *~

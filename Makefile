@@ -5,7 +5,9 @@ include $(topdir)/config.mk
 
 subdirs=src test
 
-all:
+all: subdirs
+
+subdirs:
 	@for dir in $(subdirs); do \
 		(cd $$dir && make) || exit 1; \
 	done

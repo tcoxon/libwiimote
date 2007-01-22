@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "wiimote.h"
 #include "wiimote_api.h"
@@ -160,11 +161,20 @@ int main(int argc, char **argv)
 			wiimote.axis.y,
 			wiimote.axis.z);
 
-		fprintf(stderr, "TILT x=%03d y=%03d z=%03d\n", 
+#ifdef _ENABLE_TILT
+		fprintf(stderr, "TILT x=%.3f y=%.3f z=%.3f\n", 
 			wiimote.tilt.x,
 			wiimote.tilt.y,
 			wiimote.tilt.z);
-		
+#endif
+
+#ifdef _ENABLE_FORCE		
+		fprintf(stderr, "FORCE x=%.3f y=%.3f z=%.3f (sum=%.3f)\n", 
+			wiimote.force.x,
+			wiimote.force.y,
+			wiimote.force.z,
+			sqrt(wiimote.force.x*wiimote.force.x+wiimote.force.y*wiimote.force.y+wiimote.force.z*wiimote.force.z));
+#endif
 		fprintf(stderr, "IR1 x=%04d y=%04d ss=%d\n",
 			wiimote.ir1.x,
 			wiimote.ir1.y,

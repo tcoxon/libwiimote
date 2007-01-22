@@ -4,14 +4,11 @@ topdir:=..
 include $(topdir)/config.mk
 
 CFLAGS:=$(CFLAGS) -static
-LIBS:=$(LIBS) -L$(LIBDIR) -lwiimote -lbluetooth -lm
+LIBS:=$(LIBS) -L$(LIBDIR) -lcwiimote -lbluetooth -lm
 
-all: test1 test2
+all: test1 test2 test3
 
-test1: test1.c $(LIBDIR)/libwiimote.a
-	$(GCC) $(CFLAGS) $(INCLUDES) -o $(BINDIR)/$@ $< $(LIBS)
-
-test2: test2.c $(LIBDIR)/libwiimote.a
+test%: test%.c $(LIBDIR)/libcwiimote.a
 	$(GCC) $(CFLAGS) $(INCLUDES) -o $(BINDIR)/$@ $< $(LIBS)
 
 clean:
