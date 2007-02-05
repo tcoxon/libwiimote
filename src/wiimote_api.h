@@ -29,6 +29,7 @@
 #include "wiimote_util.h"
 #include "wiimote_report.h"
 #include "wiimote_speaker.h"
+#include "wiimote_mii.h"
 
 #define wiimote_is_open(w)		((w)->link.status == WIIMOTE_STATUS_CONNECTED)
 #define wiimote_is_closed(w)	(!wiimote_is_open(w))

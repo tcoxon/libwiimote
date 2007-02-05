@@ -1,4 +1,4 @@
-/* $Id: test1.c 15 2007-01-09 01:19:31Z bja $ 
+/* $Id$ 
  *
  * Copyright (C) 2007, Joel Andersson <bja@kth.se>
  * 

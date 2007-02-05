@@ -6,7 +6,7 @@ include $(topdir)/config.mk
 CFLAGS:=$(CFLAGS) -static
 LIBS:=$(LIBS) -L$(LIBDIR) -lcwiimote -lbluetooth -lm
 
-all: test1 test2 test3
+all: test1 test2 test3 test4
 
 test%: test%.c $(LIBDIR)/libcwiimote.a
 	$(GCC) $(CFLAGS) $(INCLUDES) -o $(BINDIR)/$@ $< $(LIBS)

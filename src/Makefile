@@ -13,6 +13,7 @@ HEADERS = bthid.h \
 		  wiimote_util.h \
 		  wiimote_api.h \
 		  wiimote_speaker.h \
+		  wiimote_mii.h \
 		  nunchuk.h \
 		  wiimote.h
 		  
@@ -24,6 +25,7 @@ SOURCES = wiimote_link.c \
 		  wiimote_api.c \
 		  wiimote_error.c \
 		  wiimote_speaker.c \
+		  wiimote_mii.c \
 		  nunchuk.c
 
 all: libcwiimote.a libcwiimote.so
@@ -35,6 +37,6 @@ libcwiimote.so: $(SOURCES) $(HEADERS)
 libcwiimote.a: $(SOURCES) $(HEADERS)
 	$(GCC) $(CFLAGS) $(INCLUDES) -c $(SOURCES)
 	@ar rs $(LIBDIR)/$@ *.o
-	
+
 clean:
 	@rm -f libcwiimote.so *.o *~
