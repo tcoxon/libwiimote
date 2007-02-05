@@ -9,3 +9,8 @@ TODO
 
 - Support the classic controller, currently it is assumed that the nunchuk
   is the only device that will be plugged in to the extension port.
+
+- Add configuration options. 
+
+- Support more than one local device (hci0-hci6). With 7 slaves per host
+  device this will enable more than 7 connected wiimotes simultaneously.
