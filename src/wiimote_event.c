@@ -23,6 +23,9 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include <math.h>
 
 #include "bthid.h"
@@ -257,6 +260,27 @@ static int process_state(wiimote_t *wiimote, wiimote_state_t *ev)
     return WIIMOTE_OK;
 }
 
+int wiimote_pending(wiimote_t *wiimote)
+{
+     struct timeval timeout = { 0 };
+     int retval;
+     fd_set rfds;
+
+     // timeout.tv_usec = wiimote->options.update_timeout * 1000;
+     // timeout.tv_usec = 10000;
+
+     FD_ZERO(&rfds);
+     FD_SET(wiimote->link.s_intr, &rfds);
+
+     retval = select(wiimote->link.s_intr+1, &rfds, NULL, NULL, &timeout);
+     if (retval < 0) {
+	  wiimote_error("wiimote_pending(): select: %m");
+	  return WIIMOTE_ERROR;
+     }
+
+     return FD_ISSET(wiimote->link.s_intr, &rfds);
+}
+
 int wiimote_update(wiimote_t *wiimote)
 {
     wiimote_state_t ev = {{0}};
@@ -280,6 +304,10 @@ int wiimote_update(wiimote_t *wiimote)
 	
     wiimote->old.keys.bits = wiimote->keys.bits;
 
+    if (wiimote_pending(wiimote) == 0) {
+	 return 0; // no data is pending
+    }
+
     /* Get the next event from the wiimote. */
 
     if (wiimote_get_state(wiimote, &ev) < 0) {
@@ -289,5 +317,5 @@ int wiimote_update(wiimote_t *wiimote)
 
     process_state(wiimote, &ev);
 
-    return WIIMOTE_OK;
+    return 1;
 }
