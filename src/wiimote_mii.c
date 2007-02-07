@@ -195,7 +195,7 @@ int wiimote_mii_read(wiimote_t *wiimote, uint8_t *data, int slot)
     uint8_t buf[MII_DATA_BLOCK];
     uint32_t offset = (slot * WIIMOTE_MII_SLOT_SIZE) + WIIMOTE_MII_DATA_BEGIN_1;
 
-    if (wiimote_read(wiimote, offset, data, MII_DATA_BLOCK) < 0) {
+    if (wiimote_read(wiimote, offset, buf, MII_DATA_BLOCK) < 0) {
 	wiimote_error("wiimote_mii_read(): wiimote_read");
 	return WIIMOTE_ERROR;
     }
