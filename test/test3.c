@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "wiimote.h"
 #include "wiimote_api.h"
@@ -57,10 +58,12 @@ int main(int argc, char **argv)
 	}
 	else {
 	    wiimote[i].led.bits  = 1 << i;
+	    printf("connected to %s on %s\n", wiimote[i].link.r_addr, wiimote[i].link.l_addr);
 	}
     }
 
     int alive = 1;
+    int pending = 0;
 
     while (alive) {
 
@@ -76,10 +79,16 @@ int main(int argc, char **argv)
 	    else {
 		continue;
 	    }
-		
-	    if (wiimote_update(&wiimote[i]) < 0) {
+
+	    pending = wiimote_update(&wiimote[i]);
+
+	    if (pending < 0) {
 		wiimote_disconnect(&wiimote[i]);
 		continue;
+	    }
+
+	    if (pending == 0) {
+	        continue;
 	    }
 
 	    /* Disconnect the i:th wiimote if home key is pressed. */
@@ -114,6 +123,9 @@ int main(int argc, char **argv)
 		    wiimote[i].keys.plus,
 		    wiimote[i].keys.minus);
 	}
+
+	usleep(50000);
     }
+
     return 0;
 }

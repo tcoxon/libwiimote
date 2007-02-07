@@ -28,6 +28,9 @@
 #include <bluetooth/hci_lib.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <limits.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 
 #include "bthid.h"
 #include "wiimote.h"
@@ -44,7 +47,7 @@
  */
 static uint8_t WIIMOTE_DEV_CLASS[] = { 0x04, 0x25, 0x00 };
 
-static int __l2cap_connect(const char *host, uint16_t psm)
+static int l2cap_connect(wiimote_t *wiimote, uint16_t psm)
 {
     struct sockaddr_l2 addr = { 0 };
     int sock = 0;
@@ -56,8 +59,17 @@ static int __l2cap_connect(const char *host, uint16_t psm)
     }
 
     addr.l2_family = AF_BLUETOOTH;
+    str2ba(wiimote->link.l_addr, &addr.l2_bdaddr);
+
+    if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+	wiimote_error("l2cap_connect(): bind");
+	return WIIMOTE_ERROR;
+    }
+
+    memset(&addr, 0, sizeof(addr));
+    addr.l2_family = AF_BLUETOOTH;
     addr.l2_psm = htobs(psm);
-    str2ba(host, &addr.l2_bdaddr);
+    str2ba(wiimote->link.r_addr, &addr.l2_bdaddr);
 
     if (connect(sock, (struct sockaddr *)&addr, sizeof (addr)) < 0) {
 	wiimote_error("l2cap_connect(): connect");
@@ -67,45 +79,12 @@ static int __l2cap_connect(const char *host, uint16_t psm)
     return sock;
 }
 
-static void init_calibration_data(wiimote_t *wiimote)
+static void wiimote_calibrate(wiimote_t *wiimote)
 {
     uint8_t buf[16];
     memset(buf,0,16);
     wiimote_read(wiimote, 0x20, buf, 16);
     memcpy(&wiimote->cal, buf, sizeof (wiimote_cal_t));
-}
-
-static int set_link_addr(wiimote_t *wiimote, const char *host)
-{
-    int dev_id=-1, dd=-1;
-    bdaddr_t addr;
-	
-    dev_id = hci_get_route(BDADDR_LOCAL);
-    if (dev_id < 0) {
-	wiimote_error("wiimote_connect(): hci_get_route: %m");
-	return WIIMOTE_ERROR;
-    }
-	
-    dd = hci_open_dev(dev_id);
-    if (dd < 0) {
-	wiimote_error("wiimote_connect(): hci_open_dev: %m");
-	return WIIMOTE_ERROR;
-    }
-	
-    if (hci_read_bd_addr(dd, &addr, 0) < 0) {
-    	wiimote_error("wiimote_connect(): hci_read_bd_addr: %m");
-    	return WIIMOTE_ERROR;
-    }
-
-    if (hci_close_dev(dd) < 0) {
-    	wiimote_error("wiimote_connect(): hci_close_dev: %m");
-    	return WIIMOTE_ERROR;		
-    }
-    
-    ba2str(&addr, wiimote->link.l_addr);
-    strncpy(wiimote->link.r_addr, host, 19);
-	
-    return WIIMOTE_OK;
 }
 
 static int is_wiimote(int hci_sock, inquiry_info *dev)
@@ -117,7 +96,7 @@ static int is_wiimote(int hci_sock, inquiry_info *dev)
     }
 
     if (hci_remote_name(hci_sock, &dev->bdaddr, WIIMOTE_CMP_LEN, dev_name, 5000)) {
-	wiimote_error("wiimote_discover(): Error reading device name\n");
+	wiimote_error("is_wiimote(): Error reading device name\n");
 	return 0;
     }
 
@@ -149,18 +128,20 @@ int wiimote_discover(wiimote_t *devices, uint8_t size)
         return WIIMOTE_ERROR;
     }
     
-    if ((hci = hci_open_dev(dev_id)) < 0) {
-        wiimote_error("wiimote_discover(): Error opening Bluetooth device\n");
-        return WIIMOTE_ERROR;
-    }
-
     /* Get device list. */
+
     if ((dev_count = hci_inquiry(dev_id, 2, 256, NULL, &dev_list, IREQ_CACHE_FLUSH)) < 0) {
         wiimote_error("wiimote_discover(): Error on device inquiry");
         return WIIMOTE_ERROR;
     }
 
+    if ((hci = hci_open_dev(dev_id)) < 0) {
+        wiimote_error("wiimote_discover(): Error opening Bluetooth device\n");
+        return WIIMOTE_ERROR;
+    }
+
     /* Check class and name for Wiimotes. */
+
     for (i=0; i<dev_count; i++) {
 	inquiry_info *dev = &dev_list[i];
 	if (is_wiimote(hci, dev)) {
@@ -183,51 +164,154 @@ int wiimote_discover(wiimote_t *devices, uint8_t size)
     return numdevices;
 }
 
+static int conn_count(int hci_sock, int dev_id)
+{
+	struct hci_conn_list_req *cl;
+	struct hci_conn_info *ci;
+
+//	if (id != -1 && dev_id != id)
+//		return 0;
+
+	if (!(cl = alloca(10 * sizeof(*ci) + sizeof(*cl)))) {
+		wiimote_error("conn_count(): alloca: %m");
+		return WIIMOTE_ERROR;
+	}
+
+	cl->dev_id = dev_id;
+	cl->conn_num = 10;
+	ci = cl->conn_info;
+
+	if (ioctl(hci_sock, HCIGETCONNLIST, (void*) cl)) {
+		wiimote_error("conn_count(): conn_count: %m");
+		return WIIMOTE_ERROR;
+	}
+
+	return cl->conn_num;
+}
+
+int wiimote_select_device(wiimote_t *wiimote)
+{
+	struct hci_dev_list_req *dl;
+	struct hci_dev_req *dr;
+	int dev_id = -1;
+	int i, hci_sock, min;
+
+	hci_sock = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+	if (hci_sock < 0) {
+		wiimote_error("wiimote_select_device(): socket: %m");
+		return WIIMOTE_ERROR;
+	}
+
+	dl = alloca(HCI_MAX_DEV * sizeof(*dr) + sizeof(*dl));
+	if (!dl) {
+		wiimote_error("wiimote_select_device(): malloc: %m");
+		close(hci_sock);
+		return WIIMOTE_ERROR;
+	}
+
+	dl->dev_num = HCI_MAX_DEV;
+	dr = dl->dev_req;
+
+	if (ioctl(hci_sock, HCIGETDEVLIST, (void *) dl) < 0) {
+		wiimote_error("wiimote_select_device(): ioctl: %m");
+		close(hci_sock);
+		return WIIMOTE_ERROR;
+	}
+
+	min = INT_MAX;
+
+	for (i=0; i<dl->dev_num; i++, dr++) {
+		if (hci_test_bit(HCI_UP, &dr->dev_opt)) {
+			int count = conn_count(hci_sock, dr->dev_id);
+			if (count == 0) {
+				dev_id = dr->dev_id;
+				break;
+			}
+			if (count < min) {
+				dev_id = dr->dev_id;
+				min = count;
+			}
+
+		}
+	}
+
+	close(hci_sock);
+
+	wiimote->link.device = dev_id + 1;
+
+	return dev_id;
+}
 
 int wiimote_connect(wiimote_t *wiimote, const char *host)
 {
-    wiimote_report_t r = WIIMOTE_REPORT_INIT;
+	bdaddr_t l_addr;
+	wiimote_report_t r = WIIMOTE_REPORT_INIT;
 	
-    if (wiimote->link.status == WIIMOTE_STATUS_CONNECTED) {
-	wiimote_error("wiimote_connect(): already connected");
-	return WIIMOTE_ERROR;
-    }
+	if (wiimote->link.status == WIIMOTE_STATUS_CONNECTED) {
+		wiimote_error("wiimote_connect(): already connected");
+		return WIIMOTE_ERROR;
+	}
 
-    /* According to the BT-HID specification, the control channel should
-       be opened first followed by the interrupt channel. */
+	/* Note, that the device number in wiimote structure starts
+	   with 1 rather than 0 like bluez. */
 
-    wiimote->link.s_ctrl = __l2cap_connect(host, BTHID_PSM_CTRL);
-    if (wiimote->link.s_ctrl < 0) {
-	wiimote_error("wiimote_connect(): l2cap_connect");
-	return WIIMOTE_ERROR;
-    }
+	if (wiimote->link.device == 0) {
+		wiimote_select_device(wiimote);
+//		wiimote->link.device = hci_get_route(BDADDR_ANY) + 1;
+//		if (wiimote->link.device < 0) {
+//			wiimote_error("wiimote_connect(): hci_get_route: %m");
+//			return WIIMOTE_ERROR;
+//		}
+	}
 
-    wiimote->link.status = WIIMOTE_STATUS_UNDEFINED;
-    wiimote->link.s_intr = __l2cap_connect(host, BTHID_PSM_INTR);
-    if (wiimote->link.s_intr < 0) {
-	wiimote_error("wiimote_connect(): l2cap_connect");
-	return WIIMOTE_ERROR;
-    }
+	/* Fill in the bluetooth address of the local and remote devices. */
 
-    wiimote->link.status = WIIMOTE_STATUS_CONNECTED;
-    wiimote->mode.bits = WIIMOTE_MODE_DEFAULT;
-    wiimote->old.mode.bits = 0;
+	if (hci_devba(wiimote->link.device - 1, &l_addr) < 0) {
+		wiimote_error("wiimote_connect(): devba: %m");
+		return WIIMOTE_ERROR;
+	}
 
-    /* Fill in the bluetooth address of the local and remote devices. */
+    	if (ba2str(&l_addr, wiimote->link.l_addr) < 0) {
+		wiimote_error("wiimote_connect(): ba2str: %m");
+		return WIIMOTE_ERROR;
+	}
 
-    set_link_addr(wiimote, host);	
+	if (!strncpy(wiimote->link.r_addr, host, 19)) {
+		wiimote_error("wiimote_connect(): strncpy: %m");
+		return WIIMOTE_ERROR;
+	}
 
-    init_calibration_data(wiimote);
+	/* According to the BT-HID specification, the control channel should
+	   be opened first followed by the interrupt channel. */
+
+	wiimote->link.s_ctrl = l2cap_connect(wiimote, BTHID_PSM_CTRL);
+	if (wiimote->link.s_ctrl < 0) {
+		wiimote_error("wiimote_connect(): l2cap_connect");
+		return WIIMOTE_ERROR;
+	}
+
+	wiimote->link.status = WIIMOTE_STATUS_UNDEFINED;
+	wiimote->link.s_intr = l2cap_connect(wiimote, BTHID_PSM_INTR);
+	if (wiimote->link.s_intr < 0) {
+		wiimote_error("wiimote_connect(): l2cap_connect");
+		return WIIMOTE_ERROR;
+	}
+
+	wiimote->link.status = WIIMOTE_STATUS_CONNECTED;
+	wiimote->mode.bits = WIIMOTE_MODE_DEFAULT;
+	wiimote->old.mode.bits = 0;
+
+	wiimote_calibrate(wiimote);
 	
-    /* Prepare and send a status report request. This will initialize the
-       nunchuk if it is plugged in as a side effect. */
+	/* Prepare and send a status report request. This will initialize the
+	   nunchuk if it is plugged in as a side effect. */
 
-    r.channel = WIIMOTE_RID_STATUS;
-    if (wiimote_report(wiimote, &r, sizeof (r.status)) < 0) {
-	wiimote_error("wiimote_connect(): status report request failed");
-    }
+	r.channel = WIIMOTE_RID_STATUS;
+	if (wiimote_report(wiimote, &r, sizeof (r.status)) < 0) {
+		wiimote_error("wiimote_connect(): status report request failed");
+	}
 
-    return WIIMOTE_OK;
+	return WIIMOTE_OK;
 }
 
 int wiimote_disconnect(wiimote_t *wiimote)

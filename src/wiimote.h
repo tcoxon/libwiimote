@@ -127,11 +127,11 @@ typedef struct {
  * A point returned from the IR camera.
  */
 typedef struct {
-  uint8_t x;			/* Position of point on x-axis.*/
-  uint8_t y;			/* Position of point on y-axis. */
-  uint8_t ss : 4;		/* Size of point. */
-  uint8_t xx : 2;		/* Most significant bits of x. */
-  uint8_t yy : 2;		/* Most significant bits of y. */
+  uint8_t x;		/* Position of point on x-axis.*/
+  uint8_t y;		/* Position of point on y-axis. */
+  uint8_t ss : 4;	/* Size of point. */
+  uint8_t xx : 2;	/* Most significant bits of x. */
+  uint8_t yy : 2;	/* Most significant bits of y. */
 } __attribute__((packed)) wiimote_point2_t;
 
 typedef struct {
@@ -146,9 +146,10 @@ typedef struct {
 typedef struct {
   char r_addr[19]; 	/* Bluetooth address of the wiimote. */
   char l_addr[19]; 	/* Bluetooth address of the local host. */
-  int status;			/* Current connection status. */
-  int s_intr;			/* HID interrupt socket. */
-  int s_ctrl;			/* HID control socket. */
+  int status;		/* Current connection status. */
+  int device;		/* Bluetooth device number (1-HCI_MAX_DEV). */
+  int s_intr;		/* HID interrupt socket. */
+  int s_ctrl;		/* HID control socket. */
 } wiimote_link_t;
 
 typedef struct {
@@ -215,8 +216,7 @@ typedef struct {
   wiimote_ir_t ir3;		/* Third detected IR source. */
   wiimote_ir_t ir4;		/* Fourth detected IR source. */
     
-  wiimote_cal_t cal;		/* Wiimote calibration data */
-    
+  wiimote_cal_t cal;		/* Wiimote calibration data */    
   wiimote_ext_port_t ext;	/* Current extension port state. */
 	
   wiimote_link_t link;		/* Current link state. */
