@@ -209,4 +209,10 @@ int wiimote_get_state(wiimote_t *wiimote, wiimote_state_t *state);
  */
 int wiimote_update(wiimote_t *wiimote);
 
+/*
+ * Returns an integer greater than zero if there is pending
+ * data on the interrupt channel, otherwise returns zero.
+ */
+int wiimote_pending(wiimote_t *wiimote);
+
 #endif /* _WIIMOTE_EVENT_H_ */

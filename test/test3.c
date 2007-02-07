@@ -63,7 +63,6 @@ int main(int argc, char **argv)
     }
 
     int alive = 1;
-    int pending = 0;
 
     while (alive) {
 
@@ -80,15 +79,13 @@ int main(int argc, char **argv)
 		continue;
 	    }
 
-	    pending = wiimote_update(&wiimote[i]);
-
-	    if (pending < 0) {
-		wiimote_disconnect(&wiimote[i]);
+	    if (!wiimote_pending(&wiimote[i])) {
 		continue;
 	    }
 
-	    if (pending == 0) {
-	        continue;
+	    if (wiimote_update(&wiimote[i]) < 0) {
+		wiimote_disconnect(&wiimote[i]);
+		continue;
 	    }
 
 	    /* Disconnect the i:th wiimote if home key is pressed. */
