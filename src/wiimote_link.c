@@ -96,7 +96,7 @@ static int is_wiimote(int hci_sock, inquiry_info *dev)
     }
 
     if (hci_remote_name(hci_sock, &dev->bdaddr, WIIMOTE_CMP_LEN, dev_name, 5000)) {
-	wiimote_error("is_wiimote(): Error reading device name\n");
+	wiimote_error("is_wiimote(): Error reading device name: %m");
 	return 0;
     }
 
@@ -124,19 +124,19 @@ int wiimote_discover(wiimote_t *devices, uint8_t size)
     }
 
     if ((dev_id = hci_get_route(NULL)) < 0) {
-        wiimote_error("wiimote_discover(): no bluetooth devices found");
+        wiimote_error("wiimote_discover(): no bluetooth devices found: %m");
         return WIIMOTE_ERROR;
     }
     
     /* Get device list. */
 
     if ((dev_count = hci_inquiry(dev_id, 2, 256, NULL, &dev_list, IREQ_CACHE_FLUSH)) < 0) {
-        wiimote_error("wiimote_discover(): Error on device inquiry");
+        wiimote_error("wiimote_discover(): Error on device inquiry: %m");
         return WIIMOTE_ERROR;
     }
 
     if ((hci = hci_open_dev(dev_id)) < 0) {
-        wiimote_error("wiimote_discover(): Error opening Bluetooth device\n");
+        wiimote_error("wiimote_discover(): Error opening Bluetooth device: %m");
         return WIIMOTE_ERROR;
     }
 
@@ -164,13 +164,10 @@ int wiimote_discover(wiimote_t *devices, uint8_t size)
     return numdevices;
 }
 
-static int conn_count(int hci_sock, int dev_id)
+static int wiimote_device_rank(int hci_sock, int dev_id)
 {
 	struct hci_conn_list_req *cl;
 	struct hci_conn_info *ci;
-
-//	if (id != -1 && dev_id != id)
-//		return 0;
 
 	if (!(cl = alloca(10 * sizeof(*ci) + sizeof(*cl)))) {
 		wiimote_error("conn_count(): alloca: %m");
@@ -186,7 +183,15 @@ static int conn_count(int hci_sock, int dev_id)
 		return WIIMOTE_ERROR;
 	}
 
-	return cl->conn_num;
+	if (cl->conn_num == 0) {
+		return 0;
+	}
+
+	if ((ci->link_mode & HCI_LM_MASTER) == 0) {
+		return cl->conn_num;
+	}
+
+	return cl->conn_num + 100; 
 }
 
 int wiimote_select_device(wiimote_t *wiimote)
@@ -194,7 +199,7 @@ int wiimote_select_device(wiimote_t *wiimote)
 	struct hci_dev_list_req *dl;
 	struct hci_dev_req *dr;
 	int dev_id = -1;
-	int i, hci_sock, min;
+	int i, hci_sock, min_rank;
 
 	hci_sock = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
 	if (hci_sock < 0) {
@@ -218,18 +223,26 @@ int wiimote_select_device(wiimote_t *wiimote)
 		return WIIMOTE_ERROR;
 	}
 
-	min = INT_MAX;
+	min_rank = INT_MAX;
 
 	for (i=0; i<dl->dev_num; i++, dr++) {
 		if (hci_test_bit(HCI_UP, &dr->dev_opt)) {
-			int count = conn_count(hci_sock, dr->dev_id);
-			if (count == 0) {
+
+			int rank = wiimote_device_rank(hci_sock, dr->dev_id);
+
+			//bdaddr_t bdaddr;
+			//hci_devba(dr->dev_id, &bdaddr);
+			//fprintf(stderr, "dev=%d bdaddr=%s rank=%d\n",
+			//	dr->dev_id, batostr(&bdaddr), rank);
+
+			if (rank == 0) {
 				dev_id = dr->dev_id;
 				break;
 			}
-			if (count < min) {
+
+			if (rank < min_rank) {
 				dev_id = dr->dev_id;
-				min = count;
+				min_rank = rank;
 			}
 
 		}
@@ -256,12 +269,16 @@ int wiimote_connect(wiimote_t *wiimote, const char *host)
 	   with 1 rather than 0 like bluez. */
 
 	if (wiimote->link.device == 0) {
+#ifdef DISABLE_AUTO_SELECT
+		wiimote->link.device = hci_get_route(BDADDR_ANY) + 1;
+		if (wiimote->link.device < 0) {
+			wiimote_error("wiimote_connect(): hci_get_route: %m");
+			return WIIMOTE_ERROR;
+		}
+
+#else
 		wiimote_select_device(wiimote);
-//		wiimote->link.device = hci_get_route(BDADDR_ANY) + 1;
-//		if (wiimote->link.device < 0) {
-//			wiimote_error("wiimote_connect(): hci_get_route: %m");
-//			return WIIMOTE_ERROR;
-//		}
+#endif
 	}
 
 	/* Fill in the bluetooth address of the local and remote devices. */
