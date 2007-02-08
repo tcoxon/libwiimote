@@ -12,5 +12,3 @@ TODO
 
 - Add configuration options. 
 
-- Support more than one local device (hci0-hci6). With 7 slaves per host
-  device this will enable more than 7 connected wiimotes simultaneously.
