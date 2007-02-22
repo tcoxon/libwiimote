@@ -24,7 +24,7 @@ subdirs:
 
 install:
 	mkdir -p $(DESTDIR)$(libdir) $(DESTDIR)$(libwiimote_includedir)
-	$(INSTALL) -m 755 $(LIBDIR)/libcwiimote.so $(DESTDIR)$(libdir)/libcwiimote.so.$(VERSION)
+	$(INSTALL) -m 755 $(LIBDIR)/libcwiimote.so $(DESTDIR)$(libdir)/libcwiimote.so.$(PACKAGE_VERSION)
 	$(INSTALL) -m 755 $(LIBDIR)/libcwiimote.a $(DESTDIR)$(libdir)/libcwiimote.a
 	for i in $(SRCDIR)/*.h; do \
 		$(INSTALL) -m 644 $$i $(DESTDIR)$(libwiimote_includedir); \
@@ -33,7 +33,7 @@ install:
 uninstall:
 	rm -rf $(DESTDIR)$(libwiimote_includedir)
 	rm -f  $(DESTDIR)$(libdir)/libcwiimote.a
-	rm -f  $(DESTDIR)$(libdir)/libcwiimote.so.$(VERSION)
+	rm -f  $(DESTDIR)$(libdir)/libcwiimote.so.$(PACKAGE_VERSION)
 
 clean:
 	@rm -f *~
