@@ -41,3 +41,6 @@ clean:
 	@for dir in $(subdirs); do \
 		(cd $$dir && make clean) || exit 1; \
 	done
+
+distclean: clean
+	rm -f Makefile config.log config.status
