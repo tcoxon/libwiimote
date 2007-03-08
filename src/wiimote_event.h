@@ -55,29 +55,29 @@ typedef struct {
 		uint8_t z : 1;
 		uint8_t c : 1;
 		uint8_t reserved : 6;
-	} keys;
+	} __attribute__((packed)) keys;
 } __attribute__((packed)) wiimote_nunchuk_t;    
 
 typedef struct {
 	uint8_t x1;
-    uint8_t y1;
+	uint8_t y1;
 	uint8_t ss1 : 4;
-    uint8_t xx1 : 2;
+	uint8_t xx1 : 2;
 	uint8_t yy1 : 2;
 	uint8_t x2;
-    uint8_t y2;
+	uint8_t y2;
 	uint8_t ss2 : 4;
-    uint8_t xx2 : 2;
+	uint8_t xx2 : 2;
 	uint8_t yy2 : 2;
 	uint8_t x3;
-    uint8_t y3;
+	uint8_t y3;
 	uint8_t ss3 : 4;
-    uint8_t xx3 : 2;
+	uint8_t xx3 : 2;
 	uint8_t yy3 : 2;
 	uint8_t x4;
-    uint8_t y4;
+	uint8_t y4;
 	uint8_t ss4 : 4;
-    uint8_t xx4 : 2;
+	uint8_t xx4 : 2;
 	uint8_t yy4 : 2;
 } __attribute__((packed)) wiimote_ir_std_t;
 
@@ -115,7 +115,7 @@ typedef struct {
 		uint8_t speaker : 1;
 		uint8_t ir : 1;
 		uint8_t leds : 4;
-	};
+	} __attribute__((packed));
 	uint16_t unknown;
 	uint8_t battery;
 } __attribute__((packed)) wiimote_status_t;
@@ -126,9 +126,9 @@ typedef struct {
  */
 typedef struct {
 	uint8_t header;
-    uint8_t channel;
-    wiimote_keys_t keys;
-    wiimote_point3_t axis;
+	uint8_t channel;
+	wiimote_keys_t keys;
+	wiimote_point3_t axis;
 	wiimote_ir_std_t ir;
 } __attribute__((packed)) wiimote_std_state_t;
 
@@ -138,10 +138,10 @@ typedef struct {
  */
 typedef struct {
 	uint8_t header;
-    uint8_t channel;
-    wiimote_keys_t keys;
+	uint8_t channel;
+	wiimote_keys_t keys;
 	wiimote_nunchuk_t nunchuk;
-    uint8_t reserved[13];
+	uint8_t reserved[13];
 } __attribute__((packed)) wiimote_ext_state_t; 
 
 /*
@@ -150,11 +150,11 @@ typedef struct {
  */
 typedef struct {
 	uint8_t header;
-    uint8_t channel;
-    wiimote_keys_t keys;
-    wiimote_point3_t axis;
-    wiimote_nunchuk_t nunchuk;
-} wiimote_ext1_state_t;
+	uint8_t channel;
+	wiimote_keys_t keys;
+	wiimote_point3_t axis;
+	wiimote_nunchuk_t nunchuk;
+} __attribute__((packed)) wiimote_ext1_state_t;
 
 /*
  * This report is returned when the wiimote has been
@@ -162,11 +162,11 @@ typedef struct {
  */
 typedef struct {
 	uint8_t header;
-    uint8_t channel;
-    wiimote_keys_t keys;
-    wiimote_ir_ext_t ir;
+	uint8_t channel;
+	wiimote_keys_t keys;
+	wiimote_ir_ext_t ir;
 	wiimote_nunchuk_t nunchuk;    
-} wiimote_ext2_state_t;
+} __attribute__((packed)) wiimote_ext2_state_t;
 
 /*
  * This is the full report returned when the wiimote has
@@ -174,11 +174,11 @@ typedef struct {
  */
 typedef struct {
 	uint8_t header;
-    uint8_t channel;
-    wiimote_keys_t keys;
-    wiimote_point3_t axis;
-    wiimote_ir_ext_t ir;
-    wiimote_nunchuk_t nunchuk;
+	uint8_t channel;
+	wiimote_keys_t keys;
+	wiimote_point3_t axis;
+	wiimote_ir_ext_t ir;
+	wiimote_nunchuk_t nunchuk;
 } __attribute__((packed)) wiimote_ext3_state_t;
 
 /*
@@ -186,16 +186,16 @@ typedef struct {
  */
 typedef union {
 	struct {
-    	uint8_t header;
-    	uint8_t channel;
-    	wiimote_keys_t keys;
-	};
-    wiimote_std_state_t std;	/* 0x30,0x31,0x32,0x33 */
-    wiimote_ext_state_t ext;	/* ext (0x34) */
-    wiimote_ext1_state_t ext1;	/* acc + ext (0x35)*/
-    wiimote_ext2_state_t ext2;  /* ir  + ext (0x36)*/
-    wiimote_ext3_state_t ext3;	/* acc + ir + ext (0x37)*/
-    wiimote_status_t status;	/* 0x20 */
+		uint8_t header;
+		uint8_t channel;
+		wiimote_keys_t keys;
+	} __attribute__((packed));
+	wiimote_std_state_t std;	/* 0x30,0x31,0x32,0x33 */
+	wiimote_ext_state_t ext;	/* ext (0x34) */
+	wiimote_ext1_state_t ext1;	/* acc + ext (0x35)*/
+	wiimote_ext2_state_t ext2;  /* ir  + ext (0x36)*/
+	wiimote_ext3_state_t ext3;	/* acc + ir + ext (0x37)*/
+	wiimote_status_t status;	/* 0x20 */
 } __attribute__((packed)) wiimote_state_t;
 
 /*

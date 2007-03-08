@@ -64,6 +64,6 @@
 struct bthid_trans_header {
 	uint8_t type : 4;
 	uint8_t param : 4; /* XXX not sure about the order here. */
-};
+} __attribute__((packed));
 
 #endif /* _BTHID_H_ */

@@ -24,6 +24,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <bluetooth/bluetooth.h>
 
 #include "bthid.h"
 #include "wiimote.h"
@@ -52,8 +53,8 @@ int wiimote_read(wiimote_t *wiimote, uint32_t addr, uint8_t *data, uint16_t size
 	
 	r.header = WIIMOTE_HID_HEADER;
 	r.channel = WIIMOTE_RID_READ;
-	r.addr = htonl(addr);
-	r.size = htons(size);
+	r.addr = ntohl(addr);
+	r.size = ntohs(size);
 		
 	/* Send the read request. */
 		
@@ -296,8 +297,8 @@ int wiimote_recv(wiimote_t *wiimote, uint8_t rid, uint8_t *data, uint8_t size)
  */
 int wiimote_send_short(wiimote_t *wiimote, uint8_t rid, uint16_t data)
 {
-    data = htons(data);
-    return wiimote_send(wiimote, rid, (uint8_t *)&data, 2);
+	data = htons(data);
+	return wiimote_send(wiimote, rid, (uint8_t *)&data, 2);
 }
 
 /*
@@ -306,6 +307,6 @@ int wiimote_send_short(wiimote_t *wiimote, uint8_t rid, uint16_t data)
  */
 int wiimote_send_byte(wiimote_t *wiimote, uint8_t rid, uint8_t data)
 {
-    return wiimote_send(wiimote, rid, (uint8_t *)&data, 1);
+	return wiimote_send(wiimote, rid, (uint8_t *)&data, 1);
 }
 

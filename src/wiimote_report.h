@@ -110,7 +110,7 @@ struct req_mode_out {
 		uint8_t continuous : 1;
 		uint8_t __2 : 2;
 		uint8_t rumble : 1;
-	} options;
+	} __attribute__((packed)) options;
 	uint8_t mode;			/* 0x30-0x3f */
 } __attribute__((packed));
 
@@ -118,11 +118,11 @@ struct req_mode_out {
  * 
  */
 struct req_mode_in {
-	uint8_t header;			/* 0xa1 */
+    uint8_t header;			/* 0xa1 */
     uint8_t channel;		/* 0x30-0x3f */
     wiimote_keys_t keys;
     wiimote_point3_t accel;
-   	wiimote_point2_t ir[8];
+    wiimote_point2_t ir[8];
 } __attribute__((packed));
 
 /*
@@ -154,7 +154,7 @@ struct req_status_in {
 		uint8_t speaker : 1;
 		uint8_t ir : 1;
 		uint8_t leds : 4;
-	};
+	} __attribute__((packed));
 	uint16_t unknown;
 	uint8_t battery;	
 } __attribute__((packed));
@@ -174,7 +174,7 @@ typedef union {
 	struct {
 		uint16_t header : 8;
 		uint16_t channel : 8;
-	};
+	} __attribute__((packed));
 	struct req_read_out read;
 	struct req_write_out write;
 	struct req_mode_out mode;

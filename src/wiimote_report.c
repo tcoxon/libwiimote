@@ -42,12 +42,13 @@ int wiimote_report(wiimote_t *wiimote, wiimote_report_t *report, uint8_t size)
 	if (report->header == 0) {
 		report->header = BTHID_TYPE_SET_REPORT | BTHID_PARAM_OUTPUT;
 	}
-	
+
 	if (send(wiimote->link.s_ctrl, report, size, 0) < 0) {
 		wiimote_error("wiimote_report(): send");
 		return WIIMOTE_ERROR;
 	}
 	
+
 	/* Read and parse the handshake response. */
 
 	if (recv(wiimote->link.s_ctrl, &h, sizeof (struct bthid_trans_header), 0) < 0) {

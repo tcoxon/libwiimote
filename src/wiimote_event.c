@@ -304,7 +304,7 @@ int wiimote_update(wiimote_t *wiimote)
 	
     wiimote->old.keys.bits = wiimote->keys.bits;
 
-#ifndef _ENABLE_BLOCKING_UPDATE
+#ifdef _DISABLE_BLOCKING_UPDATE
     if (wiimote_pending(wiimote) == 0) {
 	 return 0; // no data is pending
     }
