@@ -31,11 +31,11 @@ SOURCES = wiimote_link.c \
 all: libcwiimote.a libcwiimote.so
 
 libcwiimote.so: $(SOURCES) $(HEADERS)
-	$(GCC) $(CFLAGS) $(INCLUDES) $(SOURCES) -shared -o $@  $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) $(SOURCES) -shared -o $@  $(LIBS)
 	@cp $@ $(LIBDIR)
 
 libcwiimote.a: $(SOURCES) $(HEADERS)
-	$(GCC) $(CFLAGS) $(INCLUDES) -c $(SOURCES)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $(SOURCES)
 	@ar rs $(LIBDIR)/$@ *.o
 
 clean:
