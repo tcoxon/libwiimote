@@ -1,6 +1,13 @@
 NEWS
 ====
 
+0.3.1
+
+  * Switch to autoconf build (Noritada Kobayashi).
+
+  * Fixed byte alignment issues, so the library now works on ARM
+    systems (tested with GP2X and E680i).
+
 0.3
 
   * Support for reading Mii data. See wiimote_mii.h for details (Chad 
