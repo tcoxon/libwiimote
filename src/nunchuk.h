@@ -22,6 +22,7 @@
 
 #include "wiimote.h"
 
+#define WIIMOTE_NUNCHUK_ID	0x00
 #define nunchuk_decode_byte(x)	(((x) ^ 0x17) + 0x17)
 
 int nunchuk_init(wiimote_t *wiimote);
