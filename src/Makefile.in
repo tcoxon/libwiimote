@@ -14,7 +14,8 @@ HEADERS = bthid.h \
 		  wiimote_api.h \
 		  wiimote_speaker.h \
 		  wiimote_mii.h \
-		  nunchuk.h \
+                  wiimote_classic.h \
+		  wiimote_nunchuk.h \
 		  wiimote.h
 		  
 SOURCES = wiimote_link.c \
@@ -26,7 +27,8 @@ SOURCES = wiimote_link.c \
 		  wiimote_error.c \
 		  wiimote_speaker.c \
 		  wiimote_mii.c \
-		  nunchuk.c
+		  wiimote_classic.c \
+		  wiimote_nunchuk.c
 
 all: libcwiimote.a libcwiimote.so
 

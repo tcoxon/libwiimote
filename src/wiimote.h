@@ -186,9 +186,56 @@ typedef struct {
 	nunchuk_cal_t cal;
 } __attribute__((packed)) nunchuk_t;
 
-typedef union {
-	nunchuk_t nunchuk;
-} wiimote_ext_port_t;
+typedef uint8_t wiimote_classic_cal_t[16];
+
+/*
+ * Note: This structure does not map directly to the data
+ * returned from the wiimote.
+ */
+typedef struct {
+
+	uint8_t joyx1;
+	uint8_t joyy1;
+	uint8_t joyx2;
+	uint8_t joyy2;
+
+	uint8_t l;
+	uint8_t r;
+
+	union {
+		struct {
+			uint16_t left  : 1;
+			uint16_t right : 1;
+			uint16_t up    : 1;
+			uint16_t down  : 1;
+			uint16_t l     : 1;
+			uint16_t r     : 1;
+			uint16_t zl    : 1;
+			uint16_t zr    : 1;
+			uint16_t minus : 1;
+			uint16_t plus  : 1;
+			uint16_t home  : 1;
+			uint16_t y     : 1;
+			uint16_t x     : 1;
+			uint16_t a     : 1;
+			uint16_t b     : 1;
+			uint16_t unused: 1;
+		} __attribute__((packed));
+		uint16_t bits;
+	} __attribute__((packed)) keys;
+
+	wiimote_classic_cal_t cal;
+
+} __attribute__((packed)) wiimote_classic_t;
+
+
+typedef struct {
+	uint16_t id;
+	union {
+		nunchuk_t nunchuk;
+		wiimote_classic_t classic;
+	};
+}  wiimote_ext_port_t;
 
 typedef struct {
 	uint8_t x_zero;
@@ -218,7 +265,7 @@ typedef struct {
     
 	wiimote_cal_t cal;		/* Wiimote calibration data */    
 	wiimote_ext_port_t ext;	/* Current extension port state. */
-	
+
 	wiimote_link_t link;		/* Current link state. */
 	wiimote_led_t led;		/* Current state of the leds. */
 	uint8_t rumble;		/* Current state of rumble. */
@@ -239,7 +286,7 @@ typedef struct {
 		wiimote_led_t led;
 		uint8_t rumble;
 	} old;
-	
+
 } __attribute__((packed)) wiimote_t;
 
 

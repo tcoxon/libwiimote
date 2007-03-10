@@ -25,7 +25,7 @@
 #include "wiimote.h"
 #include "wiimote_error.h"
 #include "wiimote_io.h"
-#include "nunchuk.h"
+#include "wiimote_nunchuk.h"
 
 #define NUNCHUK_MEM_START	0x04a40000
 #define NUNCHUK_MEM_END		0x04a400ff

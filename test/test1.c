@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 			wiimote.keys.plus,
 			wiimote.keys.minus);
 			
-		fprintf(stderr, "JOY joyx=%03d joyy=%03d x=%03d y=%03d z=%03d keys.z=%d keys.c=%d\n", 
+		fprintf(stderr, "JOY1 joyx=%03d joyy=%03d x=%03d y=%03d z=%03d keys.z=%d keys.c=%d\n", 
 			wiimote.ext.nunchuk.joyx,
 			wiimote.ext.nunchuk.joyy,
 			wiimote.ext.nunchuk.axis.x,
@@ -155,6 +155,15 @@ int main(int argc, char **argv)
 			wiimote.ext.nunchuk.axis.z,
 			wiimote.ext.nunchuk.keys.z,
 			wiimote.ext.nunchuk.keys.c);
+
+		fprintf(stderr, "JOY2 joyx=%03d joyy=%03d\n", 
+			wiimote.ext.classic.joyx1,
+			wiimote.ext.classic.joyy1);
+
+
+		fprintf(stderr, "JOY3 joyx=%03d joyy=%03d\n", 
+			wiimote.ext.classic.joyx2,
+			wiimote.ext.classic.joyy2);
 
 		fprintf(stderr, "AXIS x=%03d y=%03d z=%03d\n", 
 			wiimote.axis.x,
