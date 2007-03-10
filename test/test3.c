@@ -24,9 +24,10 @@
 #include "wiimote.h"
 #include "wiimote_api.h"
 
+wiimote_t wiimote[4];
+
 int main(int argc, char **argv)
 {
-    wiimote_t wiimote[4];
     int nmotes = 0;
     int i = 0;
 	
