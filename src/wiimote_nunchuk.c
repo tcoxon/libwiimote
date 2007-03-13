@@ -32,7 +32,7 @@
 #define NUNCHUK_REG_CTRL	0x04a40040
 #define NUNCHUK_REG_CAL		0x04a40020
 
-static int nunchuk_calibrate(wiimote_t *wiimote)
+int nunchuk_calibrate(wiimote_t *wiimote)
 {
 	uint8_t *data = (uint8_t *)&wiimote->ext.nunchuk.cal;
 	if (wiimote_read(wiimote, NUNCHUK_REG_CAL, data, sizeof (nunchuk_cal_t)) < 0) {		

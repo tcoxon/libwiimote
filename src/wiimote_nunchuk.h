@@ -30,5 +30,6 @@ int nunchuk_update(wiimote_t *wiimote);
 int nunchuk_free(wiimote_t *wiimote);
 void nunchuk_decode(uint8_t *data, uint32_t size);
 int nunchuk_enable(wiimote_t *wiimote, uint8_t enable);
+int nunchuk_calibrate(wiimote_t *wiimote);
 
 #endif /* _NUNCHUK_H_ */
