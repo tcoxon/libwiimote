@@ -254,7 +254,7 @@ static int process_state(wiimote_t *wiimote, wiimote_state_t *ev)
 		memcpy(&wiimote->axis, &ev->ext1.axis, sizeof (wiimote_point3_t));
 		calc_tilt(wiimote);
 		calc_force(wiimote);
-		nunchuk_decode(ev->ext2.data, 6);
+		nunchuk_decode(ev->ext1.data, 6);
 		if (wiimote->ext.id == WIIMOTE_NUNCHUK_ID) {
 			nunchuk_decode(ev->ext1.data, 6);
 			memcpy(&wiimote->ext.nunchuk, ev->ext1.data, sizeof (wiimote_nunchuk_t));
