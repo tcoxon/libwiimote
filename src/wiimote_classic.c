@@ -82,7 +82,7 @@ int wiimote_classic_update(wiimote_t *wiimote, uint8_t *data)
 	wiimote->ext.classic.keys.b     = (keys2 & (1<<6)) == 0;
 
 	wiimote->ext.classic.keys.l     = (keys1 & (1<<5)) == 0;
-	wiimote->ext.classic.keys.r     = (keys1 & (1<<0)) == 0;
+	wiimote->ext.classic.keys.r     = (keys1 & (1<<1)) == 0;
 	wiimote->ext.classic.keys.zl    = (keys2 & (1<<7)) == 0;
 	wiimote->ext.classic.keys.zr    = (keys2 & (1<<2)) == 0;
 
