@@ -95,7 +95,7 @@ static int is_wiimote(int hci_sock, inquiry_info *dev)
 	return 0;
     }
 
-    if (hci_remote_name(hci_sock, &dev->bdaddr, WIIMOTE_CMP_LEN, dev_name, 5000)) {
+    if (hci_read_remote_name(hci_sock, &dev->bdaddr, WIIMOTE_CMP_LEN, dev_name, 5000)) {
 	wiimote_error("is_wiimote(): Error reading device name: %m");
 	return 0;
     }

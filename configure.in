@@ -10,7 +10,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 
 # Checks for BlueZ.
-AC_CHECK_LIB([bluetooth], [hci_remote_name],
+AC_CHECK_LIB([bluetooth], [hci_read_remote_name],
 	     [], [AC_MSG_ERROR([We require BlueZ])])
 
 AC_CONFIG_FILES([config.mk
