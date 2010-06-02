@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	/* Activate the first led on the wiimote. It will take effect on the
 	   next call to wiimote_update. */
 
-	wiimote.led.one  = 1;
+	wiimote.led.items.one  = 1;
 
 	while (wiimote_is_open(&wiimote)) {
 		
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 		/* The wiimote object has member 'keys' which keep track of the
 		   current key state. */
 		
-		if (wiimote.keys.home) {
+		if (wiimote.keys.items.home) {
 			wiimote_disconnect(&wiimote);
 		}
 		
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
 		/* Prepare and send a status report request. */
 					
-		if (wiimote.keys.two) {
+		if (wiimote.keys.items.two) {
 			report.channel = WIIMOTE_RID_STATUS;
 			if (wiimote_report(&wiimote, &report, sizeof (report.status)) < 0) {
 				wiimote_perror("unable to get status report");
@@ -100,30 +100,30 @@ int main(int argc, char **argv)
 
 		/* Activate the IR-sensor when the 'B' key is pressed. */
 
-		if (wiimote.keys.b) {
-			wiimote.mode.ir = 1;
+		if (wiimote.keys.items.b) {
+			wiimote.mode.items.ir = 1;
 		}
 		else {
-			wiimote.mode.ir = 0;
+			wiimote.mode.items.ir = 0;
 		}
 
 		/* Activate the accelerometer when the 'A' key is pressed. */
 
-		if (wiimote.keys.a) {
-			wiimote.mode.acc = 1;
+		if (wiimote.keys.items.a) {
+			wiimote.mode.items.acc = 1;
 		}
 		else {
-			wiimote.mode.acc = 0;
+			wiimote.mode.items.acc = 0;
 		}
 
 		/* Change the LEDs on the wiimote when the plus and minus keys
 		   are pressed. */
 
-		if (wiimote.keys.plus) {
+		if (wiimote.keys.items.plus) {
 			wiimote.led.bits += 1;
 		}
 
-		if (wiimote.keys.minus) {
+		if (wiimote.keys.items.minus) {
 			wiimote.led.bits -= 1;
 		}
 		
@@ -135,35 +135,35 @@ int main(int argc, char **argv)
 		
 		fprintf(stderr, "KEYS %04x one=%d two=%d a=%d b=%d <=%d >=%d ^=%d v=%d h=%d +=%d -=%d\n",
 			wiimote.keys.bits, 
-			wiimote.keys.one,
-			wiimote.keys.two,
-			wiimote.keys.a,
-			wiimote.keys.b,
-			wiimote.keys.left,
-			wiimote.keys.right,
-			wiimote.keys.up,
-			wiimote.keys.down,
-			wiimote.keys.home,
-			wiimote.keys.plus,
-			wiimote.keys.minus);
+			wiimote.keys.items.one,
+			wiimote.keys.items.two,
+			wiimote.keys.items.a,
+			wiimote.keys.items.b,
+			wiimote.keys.items.left,
+			wiimote.keys.items.right,
+			wiimote.keys.items.up,
+			wiimote.keys.items.down,
+			wiimote.keys.items.home,
+			wiimote.keys.items.plus,
+			wiimote.keys.items.minus);
 			
 		fprintf(stderr, "JOY1 joyx=%03d joyy=%03d x=%03d y=%03d z=%03d keys.z=%d keys.c=%d\n", 
-			wiimote.ext.nunchuk.joyx,
-			wiimote.ext.nunchuk.joyy,
-			wiimote.ext.nunchuk.axis.x,
-			wiimote.ext.nunchuk.axis.y,
-			wiimote.ext.nunchuk.axis.z,
-			wiimote.ext.nunchuk.keys.z,
-			wiimote.ext.nunchuk.keys.c);
+			wiimote.ext.items.nunchuk.joyx,
+			wiimote.ext.items.nunchuk.joyy,
+			wiimote.ext.items.nunchuk.axis.x,
+			wiimote.ext.items.nunchuk.axis.y,
+			wiimote.ext.items.nunchuk.axis.z,
+			wiimote.ext.items.nunchuk.keys.items.z,
+			wiimote.ext.items.nunchuk.keys.items.c);
 
 		fprintf(stderr, "JOY2 joyx=%03d joyy=%03d\n", 
-			wiimote.ext.classic.joyx1,
-			wiimote.ext.classic.joyy1);
+			wiimote.ext.items.classic.joyx1,
+			wiimote.ext.items.classic.joyy1);
 
 
 		fprintf(stderr, "JOY3 joyx=%03d joyy=%03d\n", 
-			wiimote.ext.classic.joyx2,
-			wiimote.ext.classic.joyy2);
+			wiimote.ext.items.classic.joyx2,
+			wiimote.ext.items.classic.joyy2);
 
 		fprintf(stderr, "AXIS x=%03d y=%03d z=%03d\n", 
 			wiimote.axis.x,

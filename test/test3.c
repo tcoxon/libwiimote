@@ -91,13 +91,13 @@ int main(int argc, char **argv)
 
 	    /* Disconnect the i:th wiimote if home key is pressed. */
 
-	    if (wiimote[i].keys.home) {
+	    if (wiimote[i].keys.items.home) {
 		wiimote_disconnect(&wiimote[i]);
 	    }
 
 	    /* Enable rumble on i:th wiimote if the 1-key is pressed. */
 
-	    if (wiimote[i].keys.one) {
+	    if (wiimote[i].keys.items.one) {
 		wiimote[i].rumble = 1;
 	    }
 	    else {
@@ -109,17 +109,17 @@ int main(int argc, char **argv)
 	    fprintf(stderr, "KEYS[%d] %04x one=%d two=%d a=%d b=%d <=%d >=%d ^=%d v=%d h=%d +=%d -=%d\n",
 		    i,
 		    wiimote[i].keys.bits, 
-		    wiimote[i].keys.one,
-		    wiimote[i].keys.two,
-		    wiimote[i].keys.a,
-		    wiimote[i].keys.b,
-		    wiimote[i].keys.left,
-		    wiimote[i].keys.right,
-		    wiimote[i].keys.up,
-		    wiimote[i].keys.down,
-		    wiimote[i].keys.home,
-		    wiimote[i].keys.plus,
-		    wiimote[i].keys.minus);
+		    wiimote[i].keys.items.one,
+		    wiimote[i].keys.items.two,
+		    wiimote[i].keys.items.a,
+		    wiimote[i].keys.items.b,
+		    wiimote[i].keys.items.left,
+		    wiimote[i].keys.items.right,
+		    wiimote[i].keys.items.up,
+		    wiimote[i].keys.items.down,
+		    wiimote[i].keys.items.home,
+		    wiimote[i].keys.items.plus,
+		    wiimote[i].keys.items.minus);
 	}
 
 	usleep(50000);

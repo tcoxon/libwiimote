@@ -1,7 +1,7 @@
-/* $Id$ 
+/* $Id$
  *
  * Copyright (C) 2007, Joel Andersson <bja@kth.se>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,6 +21,7 @@
 #define _WIIMOTE_H
 
 #include <stdint.h>
+
 
 /* Status and error codes. */
 
@@ -61,50 +62,53 @@ enum {
 /*
  * Wiimote mode structure.
  */
+struct wiimote_mode_t_struct {
+	uint8_t acc : 1;		/* Accelerometer enable bit. */
+	uint8_t ir  : 1;		/* IR camera enable bit. */
+	uint8_t ext : 1;		/* Extension port enable bit. */
+	uint8_t foo : 1;
+	uint8_t unused : 4;
+} __attribute__((packed));
 typedef union {
-	struct {
-		uint8_t acc : 1;		/* Accelerometer enable bit. */
-		uint8_t ir  : 1;		/* IR camera enable bit. */
-		uint8_t ext : 1;		/* Extension port enable bit. */
-		uint8_t foo : 1;
-		uint8_t unused : 4;
-	} __attribute__((packed));
+	struct wiimote_mode_t_struct items;
 	uint8_t bits;
 } __attribute__((packed)) wiimote_mode_t;
 
 /*
  * Wiimote key states.
  */
+struct wiimote_keys_t_struct {
+	uint16_t left : 1;
+	uint16_t right : 1;
+	uint16_t down : 1;
+	uint16_t up : 1;
+	uint16_t plus : 1;
+	uint16_t reserved1: 3;
+	uint16_t two : 1;
+	uint16_t one : 1;
+	uint16_t b : 1;
+	uint16_t a : 1;
+	uint16_t minus: 1;
+	uint16_t reserved2 : 2;
+	uint16_t home : 1;
+} __attribute__((packed));
 typedef union {
-	struct {
-		uint16_t left : 1;
-		uint16_t right : 1;
-		uint16_t down : 1;
-		uint16_t up : 1;
-		uint16_t plus : 1;
-		uint16_t reserved1: 3;
-		uint16_t two : 1;
-		uint16_t one : 1;
-		uint16_t b : 1;
-		uint16_t a : 1;
-		uint16_t minus: 1;
-		uint16_t reserved2 : 2;  	
-		uint16_t home : 1;
-	} __attribute__((packed));
+	struct wiimote_keys_t_struct items;
 	uint16_t bits;
 } __attribute__((packed)) wiimote_keys_t;
 
 /*
  * Wiimote led structure.
  */
+struct wiimote_led_t_struct {
+	uint8_t one : 1;
+	uint8_t two : 1;
+	uint8_t three : 1;
+	uint8_t four : 1;
+	uint8_t rumble : 4;
+} __attribute__((packed));
 typedef union {
-	struct {
-		uint8_t one : 1;
-		uint8_t two : 1;
-		uint8_t three : 1;
-		uint8_t four : 1;
-		uint8_t rumble : 4;
-	} __attribute__((packed));
+	struct wiimote_led_t_struct items;
 	uint8_t bits;
 } __attribute__((packed)) wiimote_led_t;
 
@@ -171,18 +175,20 @@ typedef struct {
 	uint8_t reserved4;
 } __attribute__((packed)) nunchuk_cal_t;
 
+struct nunchuk_t_keys_struct {
+	uint8_t z : 1;
+	uint8_t c : 1;
+	uint8_t reserved : 6;
+} __attribute__((packed));
+union nunchuk_t_keys {
+	struct nunchuk_t_keys_struct items;
+	uint8_t bits;
+} __attribute__((packed));
 typedef struct {
 	uint8_t joyx;
 	uint8_t joyy;
 	wiimote_point3_t axis;
-	union {
-		struct {
-			uint8_t z : 1;
-			uint8_t c : 1;
-			uint8_t reserved : 6;
-		} __attribute__((packed));
-		uint8_t bits;
-	} __attribute__((packed)) keys;
+	union nunchuk_t_keys keys;
 	nunchuk_cal_t cal;
 } __attribute__((packed)) nunchuk_t;
 
@@ -192,6 +198,28 @@ typedef uint8_t wiimote_classic_cal_t[16];
  * Note: This structure does not map directly to the data
  * returned from the wiimote.
  */
+struct wiimote_classic_t_keys_items {
+	uint16_t left  : 1;
+	uint16_t right : 1;
+	uint16_t up    : 1;
+	uint16_t down  : 1;
+	uint16_t l     : 1;
+	uint16_t r     : 1;
+	uint16_t zl    : 1;
+	uint16_t zr    : 1;
+	uint16_t minus : 1;
+	uint16_t plus  : 1;
+	uint16_t home  : 1;
+	uint16_t y     : 1;
+	uint16_t x     : 1;
+	uint16_t a     : 1;
+	uint16_t b     : 1;
+	uint16_t unused: 1;
+} __attribute__((packed));
+union wiimote_classic_t_keys {
+	struct wiimote_classic_t_keys_items items;
+	uint16_t bits;
+} __attribute__((packed));
 typedef struct {
 
 	uint8_t joyx1;
@@ -202,39 +230,19 @@ typedef struct {
 	uint8_t l;
 	uint8_t r;
 
-	union {
-		struct {
-			uint16_t left  : 1;
-			uint16_t right : 1;
-			uint16_t up    : 1;
-			uint16_t down  : 1;
-			uint16_t l     : 1;
-			uint16_t r     : 1;
-			uint16_t zl    : 1;
-			uint16_t zr    : 1;
-			uint16_t minus : 1;
-			uint16_t plus  : 1;
-			uint16_t home  : 1;
-			uint16_t y     : 1;
-			uint16_t x     : 1;
-			uint16_t a     : 1;
-			uint16_t b     : 1;
-			uint16_t unused: 1;
-		} __attribute__((packed));
-		uint16_t bits;
-	} __attribute__((packed)) keys;
+	union wiimote_classic_t_keys keys;
 
 	wiimote_classic_cal_t cal;
 
 } __attribute__((packed)) wiimote_classic_t;
 
-
+union wiimote_ext_port_t_union {
+	nunchuk_t nunchuk;
+	wiimote_classic_t classic;
+};
 typedef struct {
 	uint16_t id;
-	union {
-		nunchuk_t nunchuk;
-		wiimote_classic_t classic;
-	};
+	union wiimote_ext_port_t_union items;
 }  wiimote_ext_port_t;
 
 typedef struct {
@@ -248,13 +256,13 @@ typedef struct {
 } __attribute__((packed)) wiimote_cal_t;
 
 /*
- * The wiimote data structure. This structure is designed to be 
+ * The wiimote data structure. This structure is designed to be
  * read directly from a hid report. The first part maps directly
  * to a 0x30-0x33 mode report. The order of the entries in the
  * second part is not important.
  */
 typedef struct {
-	
+
 	wiimote_mode_t mode;		/* Current report mode of wiimote. */
 	wiimote_keys_t keys;		/* Current key state. */
 	wiimote_point3_t axis;	/* Current accelerometer data. */
@@ -262,8 +270,8 @@ typedef struct {
 	wiimote_ir_t ir2;		/* Second detecterd IR source. */
 	wiimote_ir_t ir3;		/* Third detected IR source. */
 	wiimote_ir_t ir4;		/* Fourth detected IR source. */
-    
-	wiimote_cal_t cal;		/* Wiimote calibration data */    
+
+	wiimote_cal_t cal;		/* Wiimote calibration data */
 	wiimote_ext_port_t ext;	/* Current extension port state. */
 
 	wiimote_link_t link;		/* Current link state. */
@@ -272,7 +280,7 @@ typedef struct {
 	uint8_t speaker;		/* ... */
 	uint8_t battery;		/* Current battery status. */
 
-#ifdef _ENABLE_TILT    
+#ifdef _ENABLE_TILT
 	wiimote_float3_t tilt;	/* The tilt of the wiimote in degrees. */
 #endif
 

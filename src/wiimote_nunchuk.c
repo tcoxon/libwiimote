@@ -1,7 +1,7 @@
-/* $Id$ 
+/* $Id$
  *
  * Copyright (C) 2007, Joel Andersson <bja@kth.se>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,7 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
- 
+
 #include "wiimote.h"
 #include "wiimote_error.h"
 #include "wiimote_io.h"
@@ -34,8 +34,8 @@
 
 int nunchuk_calibrate(wiimote_t *wiimote)
 {
-	uint8_t *data = (uint8_t *)&wiimote->ext.nunchuk.cal;
-	if (wiimote_read(wiimote, NUNCHUK_REG_CAL, data, sizeof (nunchuk_cal_t)) < 0) {		
+	uint8_t *data = (uint8_t *)&wiimote->ext.items.nunchuk.cal;
+	if (wiimote_read(wiimote, NUNCHUK_REG_CAL, data, sizeof (nunchuk_cal_t)) < 0) {
 		wiimote_set_error("nunchuk_calibrate(): unable to read calibration data");
 		return WIIMOTE_ERROR;
 	}
@@ -57,31 +57,31 @@ int nunchuk_init(wiimote_t *wiimote)
 		wiimote_set_error("nunchuk_init(): unable to initialize nunchuk");
 		return WIIMOTE_ERROR;
 	}
-	
+
 	if (nunchuk_calibrate(wiimote) < 0) {
 		wiimote_set_error("nunchuk_init(): unable to calibrate nunchuk");
 		return WIIMOTE_ERROR;
 	}
-	
+
 	return WIIMOTE_OK;
 }
 
 int nunchuk_update(wiimote_t *wiimote)
 {
 	uint8_t data[16];
-	
+
 	if (wiimote_read(wiimote, NUNCHUK_MEM_START, data, 16) < 0) {
 		wiimote_set_error("nunchuk_update(): unable to read nunchuk state: %s", wiimote_get_error());
 		return WIIMOTE_ERROR;
 	}
-	
+
 	nunchuk_decode(&data[8], 6);
-		
-	if (!memcpy((uint8_t*)&wiimote->ext.nunchuk, &data[8], 6)) {
+
+	if (!memcpy((uint8_t*)&wiimote->ext.items.nunchuk, &data[8], 6)) {
 		wiimote_set_error("nunchuk_update(): memcpy: %s", strerror(errno));
 		return WIIMOTE_ERROR;
 	}
-	
+
 	return WIIMOTE_OK;
 }
 
@@ -96,12 +96,12 @@ void nunchuk_decode(uint8_t *data, uint32_t size)
 int nunchuk_free(wiimote_t *wiimote)
 {
 	nunchuk_enable(wiimote, 0);
-	
-	if (memset(&wiimote->ext.nunchuk.cal, 0, sizeof (nunchuk_cal_t)) < 0) {
+
+	if (memset(&wiimote->ext.items.nunchuk.cal, 0, sizeof (nunchuk_cal_t)) < 0) {
 		wiimote_set_error("nunchuk_free(): unable to clear calibration data");
 		return WIIMOTE_ERROR;
 	}
-	
+
 	return WIIMOTE_OK;
 }
 

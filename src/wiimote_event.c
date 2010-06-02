@@ -1,7 +1,7 @@
-/* $Id$ 
+/* $Id$
  *
  * Copyright (C) 2007, Joel Andersson <bja@kth.se>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -50,17 +50,17 @@ int wiimote_get_state(wiimote_t *wiimote, wiimote_state_t *state)
 static int update_mode(wiimote_t *wiimote)
 {
 	wiimote_report_t r = WIIMOTE_REPORT_INIT;
-	
+
 	if (wiimote->mode.bits == wiimote->old.mode.bits) {
 		return WIIMOTE_OK;
-	}	
-	
+	}
+
 	r.channel = WIIMOTE_RID_MODE;
 	r.mode.mode = wiimote->mode.bits;
-	
+
 	/* Enable/disable IR-sensor. */
-	
-	if (wiimote->mode.ir && !wiimote->old.mode.ir) {
+
+	if (wiimote->mode.items.ir && !wiimote->old.mode.items.ir) {
 		if (wiimote->mode.bits == WIIMOTE_MODE_ACC_IR) {
 			wiimote_enable_ir(wiimote, WIIMOTE_IR_MODE_EXP);
 		}
@@ -68,29 +68,29 @@ static int update_mode(wiimote_t *wiimote)
 			wiimote_enable_ir(wiimote, WIIMOTE_IR_MODE_STD);
 		}
 	}
-	else if (wiimote->old.mode.ir && !wiimote->mode.ir) {
+	else if (wiimote->old.mode.items.ir && !wiimote->mode.items.ir) {
 		wiimote_enable_ir(wiimote, WIIMOTE_IR_MODE_OFF);
 	}
 
 	/* Enable/disable EXP-port. */
-	
-	if (wiimote->mode.ext && !wiimote->old.mode.ext) {
+
+	if (wiimote->mode.items.ext && !wiimote->old.mode.items.ext) {
 		nunchuk_enable(wiimote,1);
 	}
-	else if (wiimote->old.mode.ext && !wiimote->mode.ext) {
+	else if (wiimote->old.mode.items.ext && !wiimote->mode.items.ext) {
 		nunchuk_enable(wiimote,0);
-	} 
-	
+	}
+
 	/* Change report mode. */
-	
+
 	if (wiimote_report(wiimote, &r, sizeof (r.mode)) < 0) {
 		wiimote_set_error("update_mode(): wiimote_report");
 		wiimote->mode.bits = wiimote->old.mode.bits;
 		return WIIMOTE_ERROR;
 	}
-	
+
 	wiimote->old.mode.bits = wiimote->mode.bits;
-	
+
 	return WIIMOTE_OK;
 }
 
@@ -152,12 +152,12 @@ static inline void calc_tilt(wiimote_t *wiimote)
 #ifdef _ENABLE_TILT
 	float xs = wiimote->cal.x_scale - wiimote->cal.x_zero;
 	float ys = wiimote->cal.y_scale - wiimote->cal.y_zero;
-	float zs = wiimote->cal.z_scale - wiimote->cal.z_zero;	
-	
+	float zs = wiimote->cal.z_scale - wiimote->cal.z_zero;
+
 	float x = (float) (wiimote->axis.x - wiimote->cal.x_zero) / xs;
 	float y = (float) (wiimote->axis.y - wiimote->cal.y_zero) / ys;
 	float z = (float) (wiimote->axis.z - wiimote->cal.z_zero) / zs;
-	
+
 	wiimote->tilt.x = (asin(x) * 180.0f / M_PI);
 	wiimote->tilt.y = (asin(y) * 180.0f / M_PI);
 	wiimote->tilt.z = (asin(z) * 180.0f / M_PI);
@@ -167,9 +167,9 @@ static inline void calc_tilt(wiimote_t *wiimote)
 static inline void calc_force(wiimote_t *wiimote)
 {
 #ifdef _ENABLE_FORCE
-	float force_x = (float) (wiimote->axis.x - wiimote->cal.x_zero) / (wiimote->cal.x_scale - wiimote->cal.x_zero); 
-	float force_y = (float) (wiimote->axis.y - wiimote->cal.y_zero) / (wiimote->cal.y_scale - wiimote->cal.y_zero); 
-	float force_z = (float) (wiimote->axis.z - wiimote->cal.z_zero) / (wiimote->cal.z_scale - wiimote->cal.z_zero); 
+	float force_x = (float) (wiimote->axis.x - wiimote->cal.x_zero) / (wiimote->cal.x_scale - wiimote->cal.x_zero);
+	float force_y = (float) (wiimote->axis.y - wiimote->cal.y_zero) / (wiimote->cal.y_scale - wiimote->cal.y_zero);
+	float force_z = (float) (wiimote->axis.z - wiimote->cal.z_zero) / (wiimote->cal.z_scale - wiimote->cal.z_zero);
 	wiimote->force.x = force_x;
 	wiimote->force.y = force_y;
 	wiimote->force.z = force_z;
@@ -181,11 +181,11 @@ static int process_state(wiimote_t *wiimote, wiimote_state_t *ev)
 	uint8_t expid[16] = { 0 };
 
 	switch (ev->channel) {
-	
+
 	case WIIMOTE_RID_ISTATUS:
-		
+
 		/* Automatically initialize device when plugged in. */
-		
+
 		if (ev->status.ext) {
 
 			// The device has to be initialized before the device id can be read.
@@ -201,32 +201,32 @@ static int process_state(wiimote_t *wiimote, wiimote_state_t *ev)
 
 
 			nunchuk_decode(expid, 16);
-			
+
 			wiimote->ext.id = expid[15];
 
-			wiimote->mode.ext = 1;
+			wiimote->mode.items.ext = 1;
 
 		}
 		else {
-			wiimote->mode.ext = 0;
+			wiimote->mode.items.ext = 0;
 			wiimote->ext.id = -1;
 		}
-		
+
 		wiimote->battery = ev->status.battery;
-		
+
 		/* Have to reset the report mode before the wiimote will send
 		   any more data after a status report has been received. */
-		
+
 		wiimote->old.mode.bits = 0; /* Forces a set report request. */
 		update_mode(wiimote);
-		
+
 		break;
-	
+
 	case WIIMOTE_MODE_ACC_IR:	/* 0x33 */
-	case WIIMOTE_MODE_IR:	/* 0x32 */	
+	case WIIMOTE_MODE_IR:	/* 0x32 */
 	case WIIMOTE_MODE_ACC:	/* 0x31 */
 	case WIIMOTE_MODE_DEFAULT:	/* 0x30 */
-	
+
 		conv_ir_std(wiimote, &ev->std.ir);
 		memcpy(&wiimote->axis, &ev->std.axis, sizeof (wiimote_point3_t));
 		wiimote->keys.bits = ev->keys.bits;
@@ -234,22 +234,22 @@ static int process_state(wiimote_t *wiimote, wiimote_state_t *ev)
 		calc_tilt(wiimote);
 		calc_force(wiimote);
 		break;
-	
+
 	case WIIMOTE_MODE_EXT: /* 0x34 */
 
 		wiimote->keys.bits = ev->keys.bits;
 		nunchuk_decode(ev->ext.data, 6);
 		if (wiimote->ext.id == WIIMOTE_NUNCHUK_ID) {
-			memcpy(&wiimote->ext.nunchuk, ev->ext.data, sizeof (wiimote_nunchuk_t));
-			wiimote->ext.nunchuk.keys.bits ^= 0xff;
+			memcpy(&wiimote->ext.items.nunchuk, ev->ext.data, sizeof (wiimote_nunchuk_t));
+			wiimote->ext.items.nunchuk.keys.bits ^= 0xff;
 		}
 		else if (wiimote->ext.id == WIIMOTE_CLASSIC_ID) {
 			wiimote_classic_update(wiimote, ev->ext.data);
 		}
 		break;
-		
+
 	case WIIMOTE_MODE_ACC_EXT: /* 0x35 */
-	
+
 		wiimote->keys.bits = ev->keys.bits;
 		memcpy(&wiimote->axis, &ev->ext1.axis, sizeof (wiimote_point3_t));
 		calc_tilt(wiimote);
@@ -257,30 +257,30 @@ static int process_state(wiimote_t *wiimote, wiimote_state_t *ev)
 		nunchuk_decode(ev->ext1.data, 6);
 		if (wiimote->ext.id == WIIMOTE_NUNCHUK_ID) {
 			nunchuk_decode(ev->ext1.data, 6);
-			memcpy(&wiimote->ext.nunchuk, ev->ext1.data, sizeof (wiimote_nunchuk_t));
-			wiimote->ext.nunchuk.keys.bits ^= 0xff;
+			memcpy(&wiimote->ext.items.nunchuk, ev->ext1.data, sizeof (wiimote_nunchuk_t));
+			wiimote->ext.items.nunchuk.keys.bits ^= 0xff;
 		}
 		else if (wiimote->ext.id == WIIMOTE_CLASSIC_ID) {
 			wiimote_classic_update(wiimote, ev->ext1.data);
 		}
 		break;
-		
+
 	case WIIMOTE_MODE_IR_EXT: /* 0x36 */
 
 		wiimote->keys.bits = ev->keys.bits;
 		nunchuk_decode(ev->ext2.data, 6);
 		if (wiimote->ext.id == WIIMOTE_NUNCHUK_ID) {
-			memcpy(&wiimote->ext.nunchuk, ev->ext2.data, sizeof (wiimote_nunchuk_t));
-			wiimote->ext.nunchuk.keys.bits ^= 0xff;
+			memcpy(&wiimote->ext.items.nunchuk, ev->ext2.data, sizeof (wiimote_nunchuk_t));
+			wiimote->ext.items.nunchuk.keys.bits ^= 0xff;
 			conv_ir_ext(wiimote, &ev->ext2.ir);
 		}
 		else if (wiimote->ext.id == WIIMOTE_CLASSIC_ID) {
 			wiimote_classic_update(wiimote, ev->ext2.data);
 		}
 		break;
-		
+
 	case WIIMOTE_MODE_ACC_IR_EXT: /* 0x37 */
-	
+
 		wiimote->keys.bits = ev->keys.bits;
 		memcpy(&wiimote->axis, &ev->ext3.axis, sizeof (wiimote_point3_t));
 		calc_tilt(wiimote);
@@ -288,19 +288,19 @@ static int process_state(wiimote_t *wiimote, wiimote_state_t *ev)
 		conv_ir_ext(wiimote, &ev->ext3.ir);
 		nunchuk_decode(ev->ext3.data, 6);
 		if (wiimote->ext.id == WIIMOTE_NUNCHUK_ID) {
-			memcpy(&wiimote->ext.nunchuk, ev->ext3.data, sizeof (wiimote_nunchuk_t));
-			wiimote->ext.nunchuk.keys.bits ^= 0xff;
+			memcpy(&wiimote->ext.items.nunchuk, ev->ext3.data, sizeof (wiimote_nunchuk_t));
+			wiimote->ext.items.nunchuk.keys.bits ^= 0xff;
 		}
 		else if (wiimote->ext.id == WIIMOTE_CLASSIC_ID) {
 			wiimote_classic_update(wiimote, ev->ext3.data);
 		}
 		break;
-	
+
 	default:
 		wiimote_set_error("wiimote_update(): invalid mode: 0x%x\n", ev->channel);
 		return WIIMOTE_ERROR;
 	}
-	
+
 	return WIIMOTE_OK;
 }
 
@@ -345,7 +345,7 @@ int wiimote_update(wiimote_t *wiimote)
 	}
 
 	/* Backup the current key state. */
-	
+
 	wiimote->old.keys.bits = wiimote->keys.bits;
 
 #ifdef _DISABLE_BLOCKING_UPDATE

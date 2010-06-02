@@ -62,8 +62,8 @@ int main(int argc, char **argv)
 	/* Activate the first led on the wiimote. It will take effect on the
 	   next call to wiimote_update. */
 
-	wiimote.led.one  = 1;
-	wiimote.mode.acc = 1;
+	wiimote.led.items.one  = 1;
+	wiimote.mode.items.acc = 1;
 	
 	wiimote_speaker_init(&wiimote, WIIMOTE_FMT_S4, 0xff);
 
@@ -85,11 +85,11 @@ int main(int argc, char **argv)
 		/* The wiimote object has member 'keys' which keep track of the
 		   current key state. */
 		
-		if (wiimote.keys.home) {
+		if (wiimote.keys.items.home) {
 			wiimote_disconnect(&wiimote);
 		}
 		
-		if (wiimote.keys.a) {
+		if (wiimote.keys.items.a) {
 			gettimeofday(&tv,NULL);
 			t = (tv.tv_sec * 1e6 + tv.tv_usec) / 1e3;
 			if (t > timeout) {
